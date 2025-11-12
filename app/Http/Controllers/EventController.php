@@ -1,48 +1,58 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-class EventController
+class EventController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        return Auth::user()->events()->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'whatsapp' => 'required|string|max:20',
+            'all_day' => 'boolean',
+            'notes' => 'nullable|string',
+            'start_time' => 'nullable|date',
+            'end_time' => 'nullable|date|after_or_equal:start_time',
+        ]);
+
+        $event = Auth::user()->events()->create($validated);
+        return response()->json($event, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Event $event)
     {
-        //
+        $this->authorize('view', $event);
+        return $event;
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Event $event)
     {
-        //
+        $this->authorize('update', $event);
+
+        $event->update($request->validate([
+            'full_name' => 'sometimes|string|max:255',
+            'whatsapp' => 'sometimes|string|max:20',
+            'all_day' => 'boolean',
+            'notes' => 'nullable|string',
+            'start_time' => 'nullable|date',
+            'end_time' => 'nullable|date|after_or_equal:start_time',
+        ]));
+
+        return response()->json($event);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Event $event)
     {
-        //
+        $this->authorize('delete', $event);
+        $event->delete();
+        return response()->noContent();
     }
 }
