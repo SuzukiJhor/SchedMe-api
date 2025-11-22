@@ -72,7 +72,7 @@ class EventController extends Controller
 
         // Se end_time não existir → adiciona +1 dia
         if (!isset($validated['end_time']) && isset($validated['start_time'])) {
-            $validated['end_time'] = Carbon\Carbon::parse($validated['start_time'])
+            $validated['end_time'] = Carbon::parse($validated['start_time'])
                 ->addDay()
                 ->format('Y/m/d');
         }
